@@ -8,8 +8,8 @@ authors = ["Sviatoslav Kovaliv <sviatoslav.kovaliv@wesoftyou.com>"]
 python = "^3.9"
 fastapi = "^0.73.0"
 uvicorn = {extras = ["standard"], version = "^0.17.1"}
-SQLAlchemy = "^1.4.31"
 aiosqlite = "^0.17.0"
+sqlmodel = "^0.0.6"
 
 [tool.poetry.dev-dependencies]
 

@@ -1,13 +1,15 @@
-from sqlalchemy import Column, Integer, String
+from typing import Optional, List
 
-from db.config import Base
+from sqlmodel import SQLModel, Field, Relationship
 
 
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    firstname = Column(String, nullable=False)
-    lastname = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
-    password = Column(String, nullable=False)
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    firstname: str
+    lastname: str
+    email: str = Field(sa_column_kwargs={"unique": True})
+    password: str
+    # backward relationship
+    posts: List["Post"] = Relationship(back_populates="user")
+    ratings: List["Rating"] = Relationship(back_populates="user")
+    comments: List["Comment"] = Relationship(back_populates="user")

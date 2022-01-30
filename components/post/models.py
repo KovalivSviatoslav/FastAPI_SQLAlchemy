@@ -1,32 +1,35 @@
-from datetime import datetime
+import datetime
+from typing import Optional, List
 
-from sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import DateTime, Column, Text
+from sqlmodel import SQLModel, Field, Relationship
 
 from components.user.models import User
-from db.config import Base
 
 
-class Post(Base):
-    __tablename__ = 'posts'
+class Post(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(sa_column_kwargs={"unique": True})
+    body: str = Field(
+        sa_column=Column(Text, nullable=False)
+    )
+    created_at: datetime.datetime = Field(
+        sa_column=Column(DateTime, default=datetime.datetime.now)
+    )
+    updated_at: datetime.datetime = Field(
+        sa_column=Column(DateTime, onupdate=datetime.datetime.now)
+    )
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user: Optional[User] = Relationship(back_populates="posts")
+    # backward relationship
+    ratings: List["Rating"] = Relationship(back_populates="post")
+    comments: List["Comment"] = Relationship(back_populates="post")
 
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    body = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, onupdate=datetime.now)
 
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User, back_populates="posts")
-
-
-class Rating(Base):
-    __tablename__ = 'ratings'
-
-    id = Column(Integer, primary_key=True)
-    value = Column(Integer, nullable=False)
-
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User, back_populates="ratings")
-    post_id = Column(Integer, ForeignKey('post.id'))
-    post = relationship(Post, back_populates="ratings")
+class Rating(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    value: int
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user: Optional[User] = Relationship(back_populates="ratings")
+    post_id: Optional[int] = Field(default=None, foreign_key="post.id")
+    post: Optional[Post] = Relationship(back_populates="ratings")

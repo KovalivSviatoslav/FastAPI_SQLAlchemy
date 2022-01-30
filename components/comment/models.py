@@ -1,23 +1,26 @@
-from datetime import datetime
+import datetime
+from typing import Optional
 
-from sqlalchemy import Column, Integer, Text, Boolean, DateTime, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import DateTime, Column, Text
+from sqlmodel import SQLModel, Field, Relationship
 
 from components.post.models import Post
 from components.user.models import User
-from db.config import Base
 
 
-class Comment(Base):
-    __tablename__ = 'comments'
-
-    id = Column(Integer, primary_key=True)
-    message = Column(Text, nullable=False)
-    is_updated = Column(Boolean, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
-    updated_at = Column(DateTime, onupdate=datetime.now)
-
-    user_id = Column(Integer, ForeignKey('user.id'))
-    user = relationship(User, back_populates="comments")
-    post_id = Column(Integer, ForeignKey('post.id'))
-    post = relationship(Post, back_populates="comments")
+class Comment(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    message: str = Field(
+        sa_column=Column(Text, nullable=False)
+    )
+    is_updated: bool
+    created_at: datetime.datetime = Field(
+        sa_column=Column(DateTime, default=datetime.datetime.now)
+    )
+    updated_at: datetime.datetime = Field(
+        sa_column=Column(DateTime, onupdate=datetime.datetime.now)
+    )
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user: Optional[User] = Relationship(back_populates="comments")
+    post_id: Optional[int] = Field(default=None, foreign_key="post.id")
+    post: Optional[Post] = Relationship(back_populates="comments")

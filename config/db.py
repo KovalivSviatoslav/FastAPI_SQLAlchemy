@@ -3,8 +3,9 @@ from typing import Literal, Union
 
 from confz import ConfZ, ConfZFileSource, ConfZEnvSource
 from pydantic import SecretStr
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 CONFIG_DIR = Path(__file__).parent.parent.resolve() / "env_files"
 

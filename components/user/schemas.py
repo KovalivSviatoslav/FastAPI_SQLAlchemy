@@ -1,3 +1,5 @@
+from pydantic import BaseModel
+
 from components.user.models import BaseUser
 
 
@@ -5,5 +7,10 @@ class UserCreateSchema(BaseUser):
     password: str
 
 
-class UserResponseSchema(BaseUser):
-    id: int
+class SignInSchema(BaseModel):
+    email: str
+    password: str
+
+
+class AccessTokenSchema(BaseModel):
+    access_token: str

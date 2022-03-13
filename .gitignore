@@ -1,3 +1,4 @@
 *.db
 *.yml
-.idea/
+.idea
+.mypy_cache

@@ -2,7 +2,6 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from components.user.auth import AuthHandler
-from components.user.models import User
 from components.user.schemas import UserCreateSchema, AccessTokenSchema, SignInSchema
 from components.user.services import UserService
 from config.db import get_session
@@ -49,12 +48,3 @@ async def login(payload: SignInSchema, session: AsyncSession = Depends(get_sessi
 
     access_token = AuthHandler().encode_token(user.id)
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@user_router.get(
-    "/users",
-    status_code=status.HTTP_201_CREATED,
-    tags=["users"]
-)
-async def test(session: AsyncSession = Depends(get_session), user: User = Depends(AuthHandler().get_current_user)):
-    return user

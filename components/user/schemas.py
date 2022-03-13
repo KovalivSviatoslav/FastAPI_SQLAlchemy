@@ -14,3 +14,8 @@ class SignInSchema(BaseModel):
 
 class AccessTokenSchema(BaseModel):
     access_token: str
+
+
+class UserDetailSchema(BaseModel):
+    firstname: str
+    lastname: str

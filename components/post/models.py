@@ -7,12 +7,15 @@ from sqlmodel import SQLModel, Field, Relationship
 from components.user.models import User
 
 
-class Post(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+class BasePost(SQLModel):
     name: str = Field(sa_column_kwargs={"unique": True})
     body: str = Field(
         sa_column=Column(Text, nullable=False)
     )
+
+
+class Post(BasePost, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime.datetime = Field(
         sa_column=Column(DateTime, default=datetime.datetime.now)
     )

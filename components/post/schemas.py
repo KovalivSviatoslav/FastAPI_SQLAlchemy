@@ -1,7 +1,7 @@
 import datetime
 from typing import List
 
-from components.comment.schemas import CommentDetailSchema
+from components.comment.schemas import CommentDetailResponse
 from components.post.models import BasePost
 
 
@@ -15,4 +15,4 @@ class PostCreateUpdateResponse(BasePost):
 
 
 class PostDetailUpdateResponse(PostCreateUpdateResponse):
-    comments: List[CommentDetailSchema]
+    comments: List[CommentDetailResponse]

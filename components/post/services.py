@@ -1,4 +1,3 @@
-import json
 from typing import Union, List
 
 from fastapi import HTTPException
@@ -44,9 +43,10 @@ class PostService:
         return posts
 
     async def update(self, post_id: int, data: dict) -> Post:
-        print(post_id)
-        print(json.dumps(data, indent=4))
-        post = await self.get_post_by_id(post_id)
+        post = await self._session.get(Post, post_id)
+        if not post:
+            raise HTTPException(status_code=404, detail="Post does not exists.")
+
         for key, value in data.items():
             setattr(post, key, value)
 

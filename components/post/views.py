@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import status
 from sqlalchemy.exc import IntegrityError
@@ -58,3 +60,17 @@ async def delete_post(
 ):
     await PostService(session).delete(post_id)
     return {"ok": True}
+
+
+@post_router.get(
+    "/posts",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.PostCreateResponse],
+    tags=["posts"]
+)
+async def list_posts(
+        session: AsyncSession = Depends(get_session),
+        user: User = Depends(AuthHandler().get_current_user)
+):
+    posts = await PostService(session).get_posts()
+    return posts

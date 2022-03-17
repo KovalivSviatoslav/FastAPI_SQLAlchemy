@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 from fastapi import HTTPException
 from sqlalchemy.exc import NoResultFound
@@ -36,3 +36,8 @@ class PostService:
 
         await self._session.delete(post)
         await self._session.commit()
+
+    async def get_posts(self) -> List[Post]:
+        query = select(Post)
+        posts = (await self._session.exec(query)).all()
+        return posts

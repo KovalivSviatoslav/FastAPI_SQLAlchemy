@@ -1,3 +1,4 @@
+import json
 from typing import Union, List
 
 from fastapi import HTTPException
@@ -41,3 +42,15 @@ class PostService:
         query = select(Post)
         posts = (await self._session.exec(query)).all()
         return posts
+
+    async def update(self, post_id: int, data: dict) -> Post:
+        print(post_id)
+        print(json.dumps(data, indent=4))
+        post = await self.get_post_by_id(post_id)
+        for key, value in data.items():
+            setattr(post, key, value)
+
+        self._session.add(post)
+        await self._session.commit()
+        await self._session.refresh(post)
+        return post

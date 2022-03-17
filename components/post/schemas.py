@@ -5,14 +5,14 @@ from components.comment.schemas import CommentDetailSchema
 from components.post.models import BasePost
 
 
-class PostCreateBody(BasePost):
+class PostCreateUpdateBody(BasePost):
     pass
 
 
-class PostCreateResponse(BasePost):
+class PostCreateUpdateResponse(BasePost):
     id: int
     created_at: datetime.datetime
 
 
-class PostDetailResponse(PostCreateResponse):
+class PostDetailUpdateResponse(PostCreateUpdateResponse):
     comments: List[CommentDetailSchema]

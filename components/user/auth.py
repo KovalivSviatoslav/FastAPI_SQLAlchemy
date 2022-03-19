@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
 
 import jwt
 from fastapi import HTTPException, Security, Depends
@@ -6,10 +7,12 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.context import CryptContext
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from components.user.models import User
 from components.user.services import UserService
 from config.app import AppConfig
 from config.db import get_session
+
+if TYPE_CHECKING:
+    from components.user.models import User
 
 
 class AuthHandler:
@@ -46,7 +49,7 @@ class AuthHandler:
             raise HTTPException(status_code=401, detail='Invalid token')
 
     async def get_current_user(self, auth: HTTPAuthorizationCredentials = Security(security),
-                               session: AsyncSession = Depends(get_session)) -> User:
+                               session: AsyncSession = Depends(get_session)) -> "User":
         user_id = self.decode_token(auth.credentials)
         user = await UserService(session).get_user_by_id(user_id)
         return user

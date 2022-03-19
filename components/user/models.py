@@ -1,6 +1,11 @@
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 
 from sqlmodel import SQLModel, Field, Relationship
+
+if TYPE_CHECKING:
+    from components.post.models import Post
+    from components.comment.models import Comment
+    from components.rating.models import Rating
 
 
 class BaseUser(SQLModel):

@@ -1,10 +1,14 @@
 import datetime
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 
 from sqlalchemy import DateTime, Column, Text
 from sqlmodel import SQLModel, Field, Relationship
 
 from components.user.models import User
+
+if TYPE_CHECKING:
+    from components.comment.models import Comment
+    from components.rating.models import Rating
 
 
 class BasePost(SQLModel):
@@ -27,12 +31,3 @@ class Post(BasePost, table=True):
     # backward relationship
     ratings: List["Rating"] = Relationship(back_populates="post")
     comments: List["Comment"] = Relationship(back_populates="post")
-
-
-class Rating(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    value: int
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    user: Optional[User] = Relationship(back_populates="ratings")
-    post_id: Optional[int] = Field(default=None, foreign_key="post.id")
-    post: Optional[Post] = Relationship(back_populates="ratings")

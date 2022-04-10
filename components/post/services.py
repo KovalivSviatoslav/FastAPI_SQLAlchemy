@@ -57,7 +57,7 @@ class PostService:
         await self._session.refresh(post)
         return post
 
-    async def get_avg_rating(self):
+    async def calculate_ratings(self):
         await self._session.execute(
             update(Post).values(
                 avg_rating=select(

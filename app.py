@@ -35,9 +35,4 @@ app.include_router(rating_router)
 @repeat_every(seconds=60, wait_first=True, raise_exceptions=True)
 async def calculate_ratings() -> None:
     async with AsyncSession(engine) as session:
-        await PostService(session).get_avg_rating()
-
-# https://dbdiagram.io/d/61f53b7085022f4ee50e4469
-# Alembic:
-# alembic revision --autogenerate -m "init"
-# alembic upgrade head
+        await PostService(session).calculate_ratings()

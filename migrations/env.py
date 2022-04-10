@@ -9,8 +9,9 @@ from sqlmodel import SQLModel
 from alembic import context
 
 from components.user.models import User
-from components.post.models import Post, Rating
+from components.post.models import Post
 from components.comment.models import Comment
+from components.rating.models import Rating
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

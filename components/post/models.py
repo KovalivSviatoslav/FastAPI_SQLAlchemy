@@ -1,6 +1,7 @@
 import datetime
 from typing import Optional, List, TYPE_CHECKING
 
+from pydantic import conint
 from sqlalchemy import DateTime, Column, Text
 from sqlmodel import SQLModel, Field, Relationship
 
@@ -31,3 +32,6 @@ class Post(BasePost, table=True):
     # backward relationship
     ratings: List["Rating"] = Relationship(back_populates="post")
     comments: List["Comment"] = Relationship(back_populates="post")
+
+    # rating calculated by task
+    avg_rating: Optional[conint(ge=1, le=10)]

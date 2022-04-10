@@ -1,12 +1,14 @@
 from typing import Union, List
 
 from fastapi import HTTPException
+from sqlalchemy import func
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import selectinload
-from sqlmodel import select
+from sqlmodel import select, update
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from components.post.models import Post
+from components.rating.models import Rating
 
 
 class PostService:
@@ -54,3 +56,13 @@ class PostService:
         await self._session.commit()
         await self._session.refresh(post)
         return post
+
+    async def get_avg_rating(self):
+        await self._session.execute(
+            update(Post).values(
+                avg_rating=select(
+                    func.round(func.avg(Rating.value), 0)
+                ).where(Rating.post_id == Post.id).scalar_subquery()
+            )
+        )
+        await self._session.commit()

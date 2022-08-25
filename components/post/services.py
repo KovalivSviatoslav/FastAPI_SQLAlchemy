@@ -20,10 +20,11 @@ class PostService:
     async def create(self, data: dict, user_id: int) -> Post:
         post = Post(**data, user_id=user_id)
         self._session.add(post)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(post)
 
         await self._es_service.put_doc(post)
+        await self._session.commit()
         return post
 
     async def get_post_by_id(self, post_id: int) -> Union[Post, None]:
@@ -41,9 +42,10 @@ class PostService:
             raise HTTPException(status_code=404, detail="Post does not exists.")
 
         await self._session.delete(post)
-        await self._session.commit()
+        await self._session.flush()
 
         await self._es_service.delete_doc(post)
+        await self._session.commit()
 
     async def get_posts(self) -> List[Post]:
         query = select(Post)
@@ -59,10 +61,11 @@ class PostService:
             setattr(post, key, value)
 
         self._session.add(post)
-        await self._session.commit()
+        await self._session.flush()
         await self._session.refresh(post)
 
         await self._es_service.update_doc(post)
+        await self._session.commit()
         return post
 
     async def get_avg_rating(self):

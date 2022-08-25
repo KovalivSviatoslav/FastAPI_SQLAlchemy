@@ -33,15 +33,14 @@ async def list_posts(
 @post_router.get(
     "/posts/search",
     status_code=status.HTTP_200_OK,
-    # response_model=List[schemas.PostCreateUpdateResponse],
     tags=["posts"]
 )
 async def search_posts(
-        start_date: Optional[date],
-        end_date: Optional[date],
         es_service: PostIndexService = Depends(PostIndexService),
         _: User = Depends(AuthHandler().get_current_user),
         search: Union[str, None] = None,
+        start_date: Optional[date] = None,
+        end_date: Optional[date] = None,
 ):
     response = await es_service.search(search, start_date, end_date)
     return response

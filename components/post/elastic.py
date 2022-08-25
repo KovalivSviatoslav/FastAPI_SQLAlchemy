@@ -10,11 +10,7 @@ class PostIndexService:
         self._client = es_client
 
     async def init_index(self):
-        request_body = {
-            "settings": {
-                "number_of_shards": 5,
-                "number_of_replicas": 1
-            },
+        mapping = {
             "mappings": {
                 "properties": {
                     "body": {
@@ -31,43 +27,9 @@ class PostIndexService:
         }
         await self._client.indices.create(
             index=self.INDEX_NAME,
-            body=request_body,
+            body=mapping,
             ignore=[400]
         )
-
-    async def search(self, search: str, start_date: date, end_date: date):
-        response = await es_client.search(
-            index=self.INDEX_NAME,
-            query={
-                "bool": {
-                    "filter": (
-                        {
-                            "multi_match": {
-                                "query": search,
-                                "fields": [
-                                    "name",
-                                    "body"
-                                ]
-                            },
-                        },
-                        {
-                            "range": {
-                                "created_at": {
-                                    "gte": start_date,
-                                    "lte": end_date
-                                }
-                            }
-                        }
-
-                    )
-                }
-            },
-            filter_path=(
-                'hits.hits._id',
-                'hits.hits._source',
-            )
-        )
-        return response['hits']['hits'] if response else []
 
     async def put_doc(self, post: Post) -> None:
         await self._client.create(
@@ -100,3 +62,52 @@ class PostIndexService:
             index=self.INDEX_NAME,
             id=post.id
         )
+
+    async def search(self, search: str, start_date: date, end_date: date):
+        query = self._build_search_query(search, start_date, end_date)
+        response = await es_client.search(
+            index=self.INDEX_NAME,
+            query=query,
+            filter_path=(
+                'hits.hits._id',
+                'hits.hits._source',
+            )
+        )
+        return response['hits']['hits'] if response else []
+
+    @staticmethod
+    def _build_search_query(search: str, start_date: date, end_date: date):
+        if search or start_date or end_date:
+            bool_filter = list()
+            query = {
+                "bool": {
+                    "filter": bool_filter
+                }
+            }
+
+            if search:
+                bool_filter.append({
+                    "multi_match": {
+                        "query": search,
+                        "fields": [
+                            "name",
+                            "body"
+                        ]
+                    },
+                })
+
+            if start_date or end_date:
+                created_at = dict()
+                if start_date:
+                    created_at["gte"] = start_date
+                if end_date:
+                    created_at["lte"] = end_date
+
+                range_filter = {
+                    "range": {
+                        "created_at": created_at
+                    }
+                }
+                bool_filter.append(range_filter)
+
+            return query

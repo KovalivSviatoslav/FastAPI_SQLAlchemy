@@ -1,4 +1,5 @@
-from typing import List
+from datetime import date
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi import status
@@ -6,12 +7,44 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from components.post import schemas
+from components.post.elastic import PostIndexService
 from components.post.services import PostService
 from components.user.auth import AuthHandler
 from components.user.models import User
 from config.db import get_session
 
 post_router = APIRouter()
+
+
+@post_router.get(
+    "/posts",
+    status_code=status.HTTP_200_OK,
+    response_model=List[schemas.PostCreateUpdateResponse],
+    tags=["posts"]
+)
+async def list_posts(
+        session: AsyncSession = Depends(get_session),
+        _: User = Depends(AuthHandler().get_current_user)
+):
+    posts = await PostService(session).get_posts()
+    return posts
+
+
+@post_router.get(
+    "/posts/search",
+    status_code=status.HTTP_200_OK,
+    # response_model=List[schemas.PostCreateUpdateResponse],
+    tags=["posts"]
+)
+async def search_posts(
+        start_date: Optional[date],
+        end_date: Optional[date],
+        es_service: PostIndexService = Depends(PostIndexService),
+        _: User = Depends(AuthHandler().get_current_user),
+        search: Union[str, None] = None,
+):
+    response = await es_service.search(search, start_date, end_date)
+    return response
 
 
 @post_router.post(
@@ -21,12 +54,16 @@ post_router = APIRouter()
     tags=["posts"]
 )
 async def create_post(
-    payload: schemas.PostCreateUpdateBody,
-    session: AsyncSession = Depends(get_session),
-    user: User = Depends(AuthHandler().get_current_user)
+        payload: schemas.PostCreateUpdateBody,
+        session: AsyncSession = Depends(get_session),
+        es_service: PostIndexService = Depends(PostIndexService),
+        user: User = Depends(AuthHandler().get_current_user)
 ):
     try:
-        post = await PostService(session).create(payload.dict(), user.id)
+        post = await PostService(session, es_service).create(
+            payload.dict(),
+            user.id
+        )
     except IntegrityError as err:
         raise HTTPException(status_code=400, detail=err.orig.args[0])
     return post
@@ -39,9 +76,9 @@ async def create_post(
     tags=["posts"]
 )
 async def get_post(
-    post_id: int,
-    session: AsyncSession = Depends(get_session),
-    _: User = Depends(AuthHandler().get_current_user)
+        post_id: int,
+        session: AsyncSession = Depends(get_session),
+        _: User = Depends(AuthHandler().get_current_user)
 ):
     post = await PostService(session).get_post_by_id(post_id=post_id)
     return post
@@ -53,26 +90,13 @@ async def get_post(
     tags=["posts"]
 )
 async def delete_post(
-    post_id: int,
-    session: AsyncSession = Depends(get_session),
-    _: User = Depends(AuthHandler().get_current_user)
+        post_id: int,
+        session: AsyncSession = Depends(get_session),
+        es_service: PostIndexService = Depends(PostIndexService),
+        _: User = Depends(AuthHandler().get_current_user)
 ):
-    await PostService(session).delete(post_id)
+    await PostService(session, es_service).delete(post_id)
     return {"ok": True}
-
-
-@post_router.get(
-    "/posts",
-    status_code=status.HTTP_200_OK,
-    response_model=List[schemas.PostCreateUpdateResponse],
-    tags=["posts"]
-)
-async def list_posts(
-    session: AsyncSession = Depends(get_session),
-    _: User = Depends(AuthHandler().get_current_user)
-):
-    posts = await PostService(session).get_posts()
-    return posts
 
 
 @post_router.put(
@@ -82,13 +106,14 @@ async def list_posts(
     tags=["posts"]
 )
 async def update_post(
-    post_id: int,
-    payload: schemas.PostCreateUpdateBody,
-    session: AsyncSession = Depends(get_session),
-    _: User = Depends(AuthHandler().get_current_user)
+        post_id: int,
+        payload: schemas.PostCreateUpdateBody,
+        session: AsyncSession = Depends(get_session),
+        es_service: PostIndexService = Depends(PostIndexService),
+        _: User = Depends(AuthHandler().get_current_user)
 ):
     try:
-        post = await PostService(session).update(post_id, payload.dict())
+        post = await PostService(session, es_service).update(post_id, payload.dict())
     except IntegrityError as err:
         raise HTTPException(status_code=400, detail=err.orig.args[0])
     return post

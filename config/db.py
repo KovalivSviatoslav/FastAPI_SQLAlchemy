@@ -32,7 +32,7 @@ class DBConfig(ConfZ):
 
     CONFIG_SOURCES = [
         ConfZFileSource(
-            file=CONFIG_DIR / "dbdev.yml"
+            file=CONFIG_DIR / "db.yml"
         ),
         ConfZEnvSource(allow=[
             "db.user",

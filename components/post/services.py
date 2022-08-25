@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Optional
 
 from fastapi import HTTPException
 from sqlalchemy import func
@@ -7,19 +7,23 @@ from sqlalchemy.orm import selectinload
 from sqlmodel import select, update
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from components.post.elastic import PostIndexService
 from components.post.models import Post
 from components.rating.models import Rating
 
 
 class PostService:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, es_service: Optional[PostIndexService] = None):
         self._session = session
+        self._es_service = es_service
 
     async def create(self, data: dict, user_id: int) -> Post:
         post = Post(**data, user_id=user_id)
         self._session.add(post)
         await self._session.commit()
         await self._session.refresh(post)
+
+        await self._es_service.put_doc(post)
         return post
 
     async def get_post_by_id(self, post_id: int) -> Union[Post, None]:
@@ -39,6 +43,8 @@ class PostService:
         await self._session.delete(post)
         await self._session.commit()
 
+        await self._es_service.delete_doc(post)
+
     async def get_posts(self) -> List[Post]:
         query = select(Post)
         posts = (await self._session.exec(query)).all()
@@ -55,6 +61,8 @@ class PostService:
         self._session.add(post)
         await self._session.commit()
         await self._session.refresh(post)
+
+        await self._es_service.update_doc(post)
         return post
 
     async def get_avg_rating(self):

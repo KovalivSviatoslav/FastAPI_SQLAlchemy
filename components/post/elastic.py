@@ -35,31 +35,19 @@ class PostIndexService:
         )
 
     async def put_doc(self, post: Post) -> None:
+        document = self._prepare_document(post)
         await self._client.create(
             index=self.INDEX_NAME,
             id=post.id,
-            document=post.dict(
-                exclude={
-                    'id',
-                    'user_id',
-                    'category_id',
-                    'avg_rating'
-                }
-            )
+            document=document
         )
 
     async def update_doc(self, post: Post) -> None:
+        document = self._prepare_document(post)
         await self._client.update(
             index=self.INDEX_NAME,
             id=post.id,
-            doc=post.dict(
-                exclude={
-                    'id',
-                    'user_id',
-                    'category_id',
-                    'avg_rating'
-                }
-            )
+            doc=document
         )
 
     async def delete_doc(self, post: Post) -> None:
@@ -116,3 +104,17 @@ class PostIndexService:
                 bool_filter.append(range_filter)
 
             return query
+
+    @staticmethod
+    def _prepare_document(post: Post):
+        document = post.dict(
+            exclude={
+                'id',
+                'user_id',
+                'category_id',
+                'avg_rating',
+                "updated_at",
+            }
+        )
+        document["category"] = post.category.name
+        return document

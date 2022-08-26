@@ -33,7 +33,7 @@ async def create_comment(
     response_model=schemas.CommentDetailResponse,
     tags=["posts"]
 )
-async def update_post(
+async def update_comment(
     comment_id: int,
     payload: schemas.CommentUpdateBody,
     session: AsyncSession = Depends(get_session),
@@ -51,7 +51,7 @@ async def update_post(
     status_code=status.HTTP_204_NO_CONTENT,
     tags=["posts"]
 )
-async def delete_post(
+async def delete_comment(
     comment_id: int,
     session: AsyncSession = Depends(get_session),
     _: User = Depends(AuthHandler().get_current_user)

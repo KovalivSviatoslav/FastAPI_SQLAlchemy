@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional, List
 
 from components.post.models import Post
 from config.elastic import es_client
@@ -56,8 +57,14 @@ class PostIndexService:
             id=post.id
         )
 
-    async def search(self, search: str, start_date: date, end_date: date):
-        query = self._build_search_query(search, start_date, end_date)
+    async def search(
+            self,
+            search: Optional[str],
+            category: Optional[str],
+            start_date: Optional[date],
+            end_date: Optional[date]
+    ):
+        query = self._build_search_query(search, category, start_date, end_date)
         response = await es_client.search(
             index=self.INDEX_NAME,
             query=query,
@@ -68,18 +75,19 @@ class PostIndexService:
         )
         return response['hits']['hits'] if response else []
 
-    @staticmethod
-    def _build_search_query(search: str, start_date: date, end_date: date):
-        if search or start_date or end_date:
-            bool_filter = list()
+    def _build_search_query(
+            self,
+            search: Optional[str],
+            category: Optional[str],
+            start_date: Optional[date],
+            end_date: Optional[date]
+    ):
+        if any((search, category, start_date, end_date)):
             query = {
-                "bool": {
-                    "filter": bool_filter
-                }
+                "bool": dict()
             }
-
             if search:
-                bool_filter.append({
+                query['bool']['must'] = {
                     "multi_match": {
                         "query": search,
                         "fields": [
@@ -87,23 +95,41 @@ class PostIndexService:
                             "body"
                         ]
                     },
-                })
-
-            if start_date or end_date:
-                created_at = dict()
-                if start_date:
-                    created_at["gte"] = start_date
-                if end_date:
-                    created_at["lte"] = end_date
-
-                range_filter = {
-                    "range": {
-                        "created_at": created_at
-                    }
                 }
-                bool_filter.append(range_filter)
+
+            if any((category, start_date, end_date)):
+                query['bool']['filter'] = self._get_bool_filter(category, start_date, end_date)
 
             return query
+
+    @staticmethod
+    def _get_bool_filter(
+            category: Optional[str], start_date: Optional[date], end_date: Optional[date]
+    ) -> List[dict]:
+        bool_filter = list()
+
+        if start_date or end_date:
+            created_at = dict()
+            if start_date:
+                created_at["gte"] = start_date
+            if end_date:
+                created_at["lte"] = end_date
+
+            range_filter = {
+                "range": {
+                    "created_at": created_at
+                }
+            }
+            bool_filter.append(range_filter)
+
+        if category:
+            bool_filter.append({
+                "term": {
+                    "category": category
+                }
+            })
+
+        return bool_filter
 
     @staticmethod
     def _prepare_document(post: Post):

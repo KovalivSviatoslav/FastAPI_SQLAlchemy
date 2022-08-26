@@ -39,10 +39,16 @@ async def search_posts(
         es_service: PostIndexService = Depends(PostIndexService),
         _: User = Depends(AuthHandler().get_current_user),
         search: Union[str, None] = None,
+        category: Union[str, None] = None,
         start_date: Optional[date] = None,
-        end_date: Optional[date] = None,
+        end_date: Optional[date] = None
 ):
-    response = await es_service.search(search, start_date, end_date)
+    response = await es_service.search(
+        search=search,
+        category=category,
+        start_date=start_date,
+        end_date=end_date
+    )
     return response
 
 

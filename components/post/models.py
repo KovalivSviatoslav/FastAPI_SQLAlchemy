@@ -29,9 +29,18 @@ class Post(BasePost, table=True):
     )
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     user: Optional[User] = Relationship(back_populates="posts")
+    category_id: Optional[int] = Field(default=None, foreign_key="category.id")
+    category: Optional["Category"] = Relationship(back_populates="posts")
     # backward relationship
     ratings: List["Rating"] = Relationship(back_populates="post")
     comments: List["Comment"] = Relationship(back_populates="post")
 
     # rating calculated by task
     avg_rating: Optional[conint(ge=1, le=10)]
+
+
+class Category(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(sa_column_kwargs={"unique": True})
+    # backward relationship
+    posts: List["Post"] = Relationship(back_populates="category")

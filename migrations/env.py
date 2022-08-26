@@ -9,7 +9,7 @@ from sqlmodel import SQLModel
 from alembic import context
 
 from components.user.models import User
-from components.post.models import Post
+from components.post.models import Post, Category
 from components.comment.models import Comment
 from components.rating.models import Rating
 

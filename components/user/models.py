@@ -17,7 +17,7 @@ class BaseUser(SQLModel):
 class User(BaseUser, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     password: str
-
+    # backward relationship
     posts: List["Post"] = Relationship(back_populates="user")
     ratings: List["Rating"] = Relationship(back_populates="user")
     comments: List["Comment"] = Relationship(back_populates="user")

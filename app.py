@@ -13,7 +13,7 @@ from components.post.views import post_router
 from components.comment.views import comment_router
 from components.rating.views import rating_router
 from components.user.models import User
-from components.post.models import Post
+from components.post.models import Post, Category
 from components.comment.models import Comment
 from components.rating.models import Rating
 

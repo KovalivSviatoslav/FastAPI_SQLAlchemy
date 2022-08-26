@@ -13,14 +13,17 @@ class PostIndexService:
         mapping = {
             "mappings": {
                 "properties": {
+                    "name": {
+                        "type": "text"
+                    },
                     "body": {
                         "type": "text"
                     },
+                    "category": {
+                        "type": "keyword"
+                    },
                     "created_at": {
                         "type": "date"
-                    },
-                    "name": {
-                        "type": "text"
                     }
                 }
             }
@@ -39,6 +42,7 @@ class PostIndexService:
                 exclude={
                     'id',
                     'user_id',
+                    'category_id',
                     'avg_rating'
                 }
             )
@@ -52,6 +56,7 @@ class PostIndexService:
                 exclude={
                     'id',
                     'user_id',
+                    'category_id',
                     'avg_rating'
                 }
             )

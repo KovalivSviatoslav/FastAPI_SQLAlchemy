@@ -52,6 +52,19 @@ async def search_posts(
     return response
 
 
+@post_router.get(
+    "/posts/categories",
+    status_code=status.HTTP_200_OK,
+    tags=["posts"]
+)
+async def get_categories_rate(
+        es_service: PostIndexService = Depends(PostIndexService),
+        _: User = Depends(AuthHandler().get_current_user),
+):
+    response = await es_service.get_categories_rate()
+    return response
+
+
 @post_router.post(
     "/posts",
     status_code=status.HTTP_201_CREATED,

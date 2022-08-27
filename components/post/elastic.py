@@ -75,6 +75,24 @@ class PostIndexService:
         )
         return response['hits']['hits'] if response else []
 
+    async def get_categories_rate(self):
+        response = await es_client.search(
+            index=self.INDEX_NAME,
+            aggs={
+                    "popular_category": {
+                        "terms": {
+                            "field": "category",
+                            "size": 10
+                        }
+                    }
+                },
+            size=0,
+            filter_path=(
+                'aggregations.popular_category.buckets',
+            )
+        )
+        return response['aggregations']['popular_category']['buckets']
+
     def _build_search_query(
             self,
             search: Optional[str],
